@@ -56,12 +56,10 @@ function drawBoard() {
   var counter = 0;
   for (var i = 0; i < 3; i++) {
     var row = document.createElement("tr");
-
     for (var x = 0; x < size; x++) {
       var col = document.createElement("td");
       //   col.innerHTML = counter;
       col.id = counter;
-
       col.addEventListener("click", gameHandler);
       row.appendChild(col);
       counter++;
@@ -80,9 +78,11 @@ function gameHandler(e) {
     addToGameBoard(this.id, "X");
     document.getElementById("player1").classList.remove("selected");
     document.getElementById("player2").classList.add("selected");
+    console.log(currentPlayer);
     if (isPlayingAi) {
+      console.log("playing ai");
       makeAiMove(currentMoves);
-      if (checkWinner()) {
+      if (checkWinner() == 0 || checkWinner() == 1) {
         reset();
         window.setTimeout(drawBoard(), 7000);
       } else if (player1Moves.length + player2Moves.length == 9) {
@@ -90,7 +90,7 @@ function gameHandler(e) {
         drawBoard();
       }
     }
-  } else if (!isPlayingAi) {
+  } else if (!isPlayingAi && currentPlayer == 1) {
     this.innerHTML = "O";
     player2Moves.push(parseInt(this.id));
     player2Moves.sort(function(a, b) {
@@ -101,10 +101,11 @@ function gameHandler(e) {
     document.getElementById("player1").classList.add("selected");
   }
 
-  if (checkWinner()) {
+  if (checkWinner() == 0 || checkWinner() == 1) {
     reset();
     window.setTimeout(drawBoard(), 7000);
   } else if (player1Moves.length + player2Moves.length == 9) {
+    console.log("tie");
     window.setTimeout(reset(), 3000);
     drawBoard();
   } else if (!isPlayingAi) {
@@ -116,9 +117,11 @@ function gameHandler(e) {
 
 function makeAiMove(board) {
   if (!checkWinner()) {
-    let bestMove = -Infinity;
-    let bestMove;
-    function move() {
+    // let position = Minimax.findBestMove(currentMoves);
+
+    function move(position) {
+      // let bestMove = -Infinity;
+      // let bestMove;
       for (let i = 0; i < 3; i++) {
         for (let k = 0; k < 3; k++) {
           if (board[i][k] != "X" && board[i][k] != "O") {
@@ -152,24 +155,24 @@ function makeAiMove(board) {
   }
 }
 
+// returns 0 for p1 win, 1 for p2 or false for neither winning
 function checkWinner() {
-  var win = false;
+  var win = 2;
 
   if (player1Moves.length > 0 && player1Moves.length < 2) {
     document.getElementById("ai-button").classList.add("ai-button-visible");
   }
 
-  var currentPlayerSelections = [];
+  //   var currentPlayerSelections = [];
 
   //get player's moves who just took their turn
-  if (currentPlayer == 0) {
-    currentPlayerSelections = player1Moves;
-  } else {
-    currentPlayerSelections = player2Moves;
-  }
-  console.log(currentPlayerSelections);
+  //   if (currentPlayer == 0) {
+  //     currentPlayerSelections = player1Moves;
+  //   } else {
+  //     currentPlayerSelections = player2Moves;
+  //   }
   //if min number of moves to win have been made
-  if (currentPlayerSelections.length >= 3) {
+  if (player1Moves.length >= 3) {
     //loop through all winnning score sets
     for (var i = 0; i < winningScores.length; i++) {
       var setToCheck = winningScores[i];
@@ -179,8 +182,8 @@ function checkWinner() {
       for (var r = 0; r < setToCheck.length; r++) {
         var foundMatchingMove = false;
 
-        for (s = 0; s < currentPlayerSelections.length; s++) {
-          if (setToCheck[r] == currentPlayerSelections[s]) {
+        for (s = 0; s < player1Moves.length; s++) {
+          if (setToCheck[r] == player1Moves[s]) {
             foundMatchingMove = true;
             break;
           }
@@ -192,11 +195,38 @@ function checkWinner() {
       }
 
       if (setFound == true) {
-        win = true;
-        if (currentPlayer == 0) {
-          player1Score++;
-        } else player2Score++;
-        break;
+        player1Score++;
+        console.log(setFound);
+        return 0;
+      }
+    }
+  }
+
+  if (player2Moves.length >= 3) {
+    //loop through all winnning score sets
+    for (var i = 0; i < winningScores.length; i++) {
+      var setToCheck = winningScores[i];
+      var setFound = true;
+
+      //check if number if in current players selections
+      for (var r = 0; r < setToCheck.length; r++) {
+        var foundMatchingMove = false;
+
+        for (s = 0; s < player2Moves.length; s++) {
+          if (setToCheck[r] == player2Moves[s]) {
+            foundMatchingMove = true;
+            break;
+          }
+        }
+        if (foundMatchingMove == false) {
+          setFound = false;
+          break;
+        }
+      }
+
+      if (setFound == true) {
+        player2Score++;
+        return 1;
       }
     }
   }
