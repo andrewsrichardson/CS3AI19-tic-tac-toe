@@ -40,18 +40,6 @@ function setPlayingHuman() {
   isPlayingAi = false;
 }
 
-//array containing all possible combinations of winning scores
-// const winningScores = [
-//   [0, 1, 2],
-//   [3, 4, 5],
-//   [6, 7, 8],
-//   [0, 3, 6],
-//   [1, 4, 7],
-//   [2, 5, 8],
-//   [0, 4, 8],
-//   [2, 4, 6]
-// ];
-
 function addToGameBoard(position, player) {
   let location = boardSpots[position];
   let x = location[0];
@@ -75,7 +63,6 @@ function drawBoard() {
     var row = document.createElement("tr");
     for (var x = 0; x < size; x++) {
       var col = document.createElement("td");
-      //   col.innerHTML = counter;
       col.id = counter;
       col.addEventListener("click", gameHandler);
       row.appendChild(col);
@@ -87,12 +74,9 @@ function drawBoard() {
 }
 
 function gameHandler(e) {
-  console.log(board);
-
   if (currentPlayer == 0) {
-    this.innerHTML = "X";
-    console.log(this.id);
-    addToGameBoard(this.id, "X");
+    this.innerHTML = "O";
+    addToGameBoard(this.id, "O");
     document.getElementById("player1").classList.remove("selected");
     document.getElementById("player2").classList.add("selected");
     if (isPlayingAi && checkWinner() == null) {
@@ -100,7 +84,6 @@ function gameHandler(e) {
       makeAiMove(board);
 
       if (checkWinner() == "X" || checkWinner() == "O") {
-        console.log("wrong reset");
         reset();
         window.setTimeout(drawBoard(), 7000);
       } else if (checkWinner() == "tie") {
@@ -146,7 +129,7 @@ function makeAiMove(board) {
   for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 3; j++) {
       if (board[i][j] != "X" && board[i][j] != "O") {
-        board[i][j] = "O";
+        board[i][j] = "X";
         let score = minimax(board, 0, false);
         board[i][j] = "";
 
@@ -159,8 +142,8 @@ function makeAiMove(board) {
     }
   }
 
-  document.getElementById(bestMove).innerHTML = "O";
-  addToGameBoard(bestMove, "O");
+  document.getElementById(bestMove).innerHTML = "X";
+  addToGameBoard(bestMove, "X");
 
   document.getElementById("player2").classList.remove("selected");
   document.getElementById("player1").classList.add("selected");
@@ -212,81 +195,6 @@ function checkWinner() {
     return winner;
   }
 }
-// returns X for p1 win, O for p2, "tie" for tie or "" for neither winning
-// function checkWinner(p1, p2, moves) {
-//   let result = "";
-
-//   if (p1.length > 0 && p1.length < 2) {
-//     document.getElementById("ai-button").classList.add("ai-button-visible");
-//   }
-//   let tie = 0;
-//   for (let i = 0; i < moves.length; i++) {
-//     if (moves[i] == "X" || moves[i] == "O") {
-//       tie++;
-//     }
-//   }
-//   if (tie == 9) {
-//     console.log(tie);
-//     return "tie";
-//   }
-//   //if min number of moves to win have been made
-//   if (p1.length >= 3) {
-//     //loop through all winnning score sets
-//     for (var i = 0; i < winningScores.length; i++) {
-//       var setToCheck = winningScores[i];
-//       var setFound = true;
-
-//       //check if number if in current players selections
-//       for (var r = 0; r < setToCheck.length; r++) {
-//         var foundMatchingMove = false;
-
-//         for (s = 0; s < p1.length; s++) {
-//           if (setToCheck[r] == p1[s]) {
-//             foundMatchingMove = true;
-//             break;
-//           }
-//         }
-//         if (foundMatchingMove == false) {
-//           setFound = false;
-//           break;
-//         }
-//       }
-
-//       if (setFound == true) {
-//         return "X";
-//       }
-//     }
-//   }
-
-//   if (p2.length >= 3) {
-//     //loop through all winnning score sets
-//     for (var i = 0; i < winningScores.length; i++) {
-//       var setToCheck = winningScores[i];
-//       var setFound = true;
-
-//       //check if number if in current players selections
-//       for (var r = 0; r < setToCheck.length; r++) {
-//         var foundMatchingMove = false;
-
-//         for (s = 0; s < p2.length; s++) {
-//           if (setToCheck[r] == p2[s]) {
-//             foundMatchingMove = true;
-//             break;
-//           }
-//         }
-//         if (foundMatchingMove == false) {
-//           setFound = false;
-//           break;
-//         }
-//       }
-
-//       if (setFound == true) {
-//         return "O";
-//       }
-//     }
-//   }
-//   return result;
-// }
 
 function reset() {
   board = [
