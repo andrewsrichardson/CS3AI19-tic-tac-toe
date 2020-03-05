@@ -31,7 +31,7 @@ var player2Score = 0;
 //current player that needs to make a move
 var currentPlayer = 0;
 
-var isPlayingAi = true;
+var isPlayingAi = false;
 
 function togglePlayingAi() {
   isPlayingAi = !isPlayingAi;
@@ -66,7 +66,7 @@ function drawBoard() {
     }
     parent.appendChild(row);
   }
-  makeAiMove(board);
+  if (isPlayingAi) makeAiMove(board);
 }
 
 //inserts a click handler into each slot on the grid which updates the game state if clicked
@@ -221,6 +221,13 @@ function makeAiMove(board) {
   //and give control back to the player.
   currentPlayer = 0;
 }
+
+//scores for each minimax result
+const minimaxScores = {
+  X: 10,
+  O: -10,
+  tie: 0
+};
 
 function minimax(board, depth, isMaximizing) {
   //first, check if this move simulation ends the game

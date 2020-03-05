@@ -20,9 +20,19 @@
           <div id="player2" class="player">Player 2 Score: 0</div>
         </div>
 
-        <button id="ai-button" onClick="setPlayingAi()">
+        <!-- <button id="ai-button" onClick="setPlayingAi()">
           Press here to play vs the AI
-        </button>
+        </button> -->
+        <label class="switch switch-flat">
+          <input
+            id="ai-button"
+            class="switch-input"
+            type="checkbox"
+            onclick="togglePlayingAi()"
+          />
+          <span class="switch-label" data-on="AI" data-off="PvP"></span>
+          <span class="switch-handle"></span>
+        </label>
         <div class="explainations"></div>
       </div>
     </div>
