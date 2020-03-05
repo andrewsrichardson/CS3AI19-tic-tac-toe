@@ -1,11 +1,29 @@
-var player1Moves = new Array();
-var player2Moves = new Array();
+// var player1Moves = new Array();
+// var player2Moves = new Array();
 
 // player1Moves = [0, 1, 3];
 // player2Moves = [2, 4, 5];
 
 // var currentMoves = ["X", "X", "O", "X", "O", "O", 6, 7, 8];
-var currentMoves = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+// var currentMoves = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+
+var board = [
+  ["", "", ""],
+  ["", "", ""],
+  ["", "", ""]
+];
+
+const boardSpots = {
+  0: [0, 0],
+  1: [0, 1],
+  2: [0, 2],
+  3: [1, 0],
+  4: [1, 1],
+  5: [1, 2],
+  6: [2, 0],
+  7: [2, 1],
+  8: [2, 2]
+};
 
 var player1Score = 0;
 var player2Score = 0;
@@ -23,21 +41,22 @@ function setPlayingHuman() {
 }
 
 //array containing all possible combinations of winning scores
-const winningScores = [
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 3, 6],
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 4, 8],
-  [2, 4, 6]
-];
+// const winningScores = [
+//   [0, 1, 2],
+//   [3, 4, 5],
+//   [6, 7, 8],
+//   [0, 3, 6],
+//   [1, 4, 7],
+//   [2, 5, 8],
+//   [0, 4, 8],
+//   [2, 4, 6]
+// ];
 
 function addToGameBoard(position, player) {
-  for (var i = 0; i < 9; i++) {
-    if (currentMoves[i] == position) currentMoves[i] = player;
-  }
+  let location = boardSpots[position];
+  let x = location[0];
+  let y = location[1];
+  board[x][y] = player;
 }
 
 function drawBoard() {
@@ -47,9 +66,9 @@ function drawBoard() {
     parent.removeChild(parent.firstChild);
   }
 
-  if (player1Moves.length == 0) {
-    document.getElementById("ai-button").classList.remove("ai-button-visible");
-  }
+  // if (player1Moves.length == 0) {
+  //   document.getElementById("ai-button").classList.remove("ai-button-visible");
+  // }
 
   var counter = 0;
   for (var i = 0; i < 3; i++) {
@@ -64,21 +83,22 @@ function drawBoard() {
     }
     parent.appendChild(row);
   }
+  makeAiMove(board);
 }
 
 function gameHandler(e) {
+  console.log(board);
+
   if (currentPlayer == 0) {
     this.innerHTML = "X";
-    player1Moves.push(parseInt(this.id));
-    player1Moves.sort(function(a, b) {
-      a - b;
-    });
+    console.log(this.id);
     addToGameBoard(this.id, "X");
     document.getElementById("player1").classList.remove("selected");
     document.getElementById("player2").classList.add("selected");
-    if (isPlayingAi && checkWinner() == "") {
+    if (isPlayingAi && checkWinner() == null) {
       currentPlayer = 1;
-      makeAiMove(currentMoves);
+      makeAiMove(board);
+
       if (checkWinner() == "X" || checkWinner() == "O") {
         console.log("wrong reset");
         reset();
@@ -90,10 +110,6 @@ function gameHandler(e) {
     }
   } else if (!isPlayingAi && currentPlayer == 1) {
     this.innerHTML = "O";
-    player2Moves.push(parseInt(this.id));
-    player2Moves.sort(function(a, b) {
-      a - b;
-    });
     addToGameBoard(this.id, "O");
     document.getElementById("player2").classList.remove("selected");
     document.getElementById("player1").classList.add("selected");
@@ -120,133 +136,164 @@ function gameHandler(e) {
     else currentPlayer = 0;
   } else {
     this.removeEventListener("click", arguments.callee);
-    console.log("should remove");
   }
 }
 
-//create copies of board and moves
 function makeAiMove(board) {
   let bestScore = -Infinity;
-  let bestMove;
-  // let p1moves = player1Moves;
-  let p2moves = player2Moves;
-  let currentMovesCopy = currentMoves;
+  let bestMove = 0;
 
-  console.log(p2moves);
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (board[i][j] != "X" && board[i][j] != "O") {
+        board[i][j] = "O";
+        let score = minimax(board, 0, false);
+        board[i][j] = "";
 
-  for (let i = 0; i < 9; i++) {
-    if (board[i] != "X" && board[i] != "O") {
-      let pos = board[i];
-      currentMovesCopy[pos] = "O";
-      p2moves.push(pos);
-      p2moves.sort(function(a, b) {
-        a - b;
-      });
-      let score = minimax(currentMovesCopy, 0, false, player1Moves, p2moves);
-      console.log("score = " + score);
-      currentMovesCopy[pos] = pos;
-      p2moves.pop();
-      if (score > bestScore) {
-        bestScore = score;
-        bestMove = pos;
+        if (score > bestScore) {
+          bestScore = score;
+          move = [i, j];
+          bestMove = getKeyByValue(boardSpots, move);
+        }
       }
     }
   }
-  console.log(bestMove);
 
   document.getElementById(bestMove).innerHTML = "O";
-  player2Moves.push(bestMove);
-  player2Moves.sort(function(a, b) {
-    a - b;
-  });
-  currentMoves[bestMove] = "O";
-  console.log(currentMoves);
+  addToGameBoard(bestMove, "O");
+
   document.getElementById("player2").classList.remove("selected");
   document.getElementById("player1").classList.add("selected");
   document.getElementById(bestMove).removeEventListener("click", gameHandler);
   currentPlayer = 0;
 }
 
-// returns X for p1 win, O for p2, "tie" for tie or "" for neither winning
-function checkWinner() {
-  let result = "";
-
-  if (player1Moves.length > 0 && player1Moves.length < 2) {
-    document.getElementById("ai-button").classList.add("ai-button-visible");
-  }
-  let tie = 0;
-  for (let i = 0; i < currentMoves.length; i++) {
-    if (currentMoves[i] == "X" || currentMoves[i] == "O") {
-      tie++;
-    }
-  }
-  if (tie == 9) {
-    return "tie";
-  }
-  //if min number of moves to win have been made
-  if (player1Moves.length >= 3) {
-    //loop through all winnning score sets
-    for (var i = 0; i < winningScores.length; i++) {
-      var setToCheck = winningScores[i];
-      var setFound = true;
-
-      //check if number if in current players selections
-      for (var r = 0; r < setToCheck.length; r++) {
-        var foundMatchingMove = false;
-
-        for (s = 0; s < player1Moves.length; s++) {
-          if (setToCheck[r] == player1Moves[s]) {
-            foundMatchingMove = true;
-            break;
-          }
-        }
-        if (foundMatchingMove == false) {
-          setFound = false;
-          break;
-        }
-      }
-
-      if (setFound == true) {
-        return "X";
-      }
-    }
-  }
-
-  if (player2Moves.length >= 3) {
-    //loop through all winnning score sets
-    for (var i = 0; i < winningScores.length; i++) {
-      var setToCheck = winningScores[i];
-      var setFound = true;
-
-      //check if number if in current players selections
-      for (var r = 0; r < setToCheck.length; r++) {
-        var foundMatchingMove = false;
-
-        for (s = 0; s < player2Moves.length; s++) {
-          if (setToCheck[r] == player2Moves[s]) {
-            foundMatchingMove = true;
-            break;
-          }
-        }
-        if (foundMatchingMove == false) {
-          setFound = false;
-          break;
-        }
-      }
-
-      if (setFound == true) {
-        return "O";
-      }
-    }
-  }
-  return result;
+function equals3(a, b, c) {
+  return a == b && b == c && a != "";
 }
 
+function checkWinner() {
+  let winner = null;
+
+  // horizontal
+  for (let i = 0; i < 3; i++) {
+    if (equals3(board[i][0], board[i][1], board[i][2])) {
+      winner = board[i][0];
+    }
+  }
+
+  // Vertical
+  for (let i = 0; i < 3; i++) {
+    if (equals3(board[0][i], board[1][i], board[2][i])) {
+      winner = board[0][i];
+    }
+  }
+
+  // Diagonal
+  if (equals3(board[0][0], board[1][1], board[2][2])) {
+    winner = board[0][0];
+  }
+  if (equals3(board[2][0], board[1][1], board[0][2])) {
+    winner = board[2][0];
+  }
+
+  let openSpots = 0;
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (board[i][j] == "") {
+        openSpots++;
+      }
+    }
+  }
+
+  if (winner == null && openSpots == 0) {
+    return "tie";
+  } else {
+    return winner;
+  }
+}
+// returns X for p1 win, O for p2, "tie" for tie or "" for neither winning
+// function checkWinner(p1, p2, moves) {
+//   let result = "";
+
+//   if (p1.length > 0 && p1.length < 2) {
+//     document.getElementById("ai-button").classList.add("ai-button-visible");
+//   }
+//   let tie = 0;
+//   for (let i = 0; i < moves.length; i++) {
+//     if (moves[i] == "X" || moves[i] == "O") {
+//       tie++;
+//     }
+//   }
+//   if (tie == 9) {
+//     console.log(tie);
+//     return "tie";
+//   }
+//   //if min number of moves to win have been made
+//   if (p1.length >= 3) {
+//     //loop through all winnning score sets
+//     for (var i = 0; i < winningScores.length; i++) {
+//       var setToCheck = winningScores[i];
+//       var setFound = true;
+
+//       //check if number if in current players selections
+//       for (var r = 0; r < setToCheck.length; r++) {
+//         var foundMatchingMove = false;
+
+//         for (s = 0; s < p1.length; s++) {
+//           if (setToCheck[r] == p1[s]) {
+//             foundMatchingMove = true;
+//             break;
+//           }
+//         }
+//         if (foundMatchingMove == false) {
+//           setFound = false;
+//           break;
+//         }
+//       }
+
+//       if (setFound == true) {
+//         return "X";
+//       }
+//     }
+//   }
+
+//   if (p2.length >= 3) {
+//     //loop through all winnning score sets
+//     for (var i = 0; i < winningScores.length; i++) {
+//       var setToCheck = winningScores[i];
+//       var setFound = true;
+
+//       //check if number if in current players selections
+//       for (var r = 0; r < setToCheck.length; r++) {
+//         var foundMatchingMove = false;
+
+//         for (s = 0; s < p2.length; s++) {
+//           if (setToCheck[r] == p2[s]) {
+//             foundMatchingMove = true;
+//             break;
+//           }
+//         }
+//         if (foundMatchingMove == false) {
+//           setFound = false;
+//           break;
+//         }
+//       }
+
+//       if (setFound == true) {
+//         return "O";
+//       }
+//     }
+//   }
+//   return result;
+// }
+
 function reset() {
-  currentPlayer = 0;
-  player1Moves.length = 0;
-  player2Moves.length = 0;
-  currentMoves = [];
+  board = [
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""]
+  ];
   document.getElementById("player2").classList.remove("selected");
   document.getElementById("player2").innerHTML =
     "Player 2 Score: " + player2Score;
@@ -261,73 +308,49 @@ const minimaxScores = {
   tie: 0
 };
 
-// function minimax(b, d, m) {
-//   return 1;
-// }
-
-function minimax(board, depth, isMaximizing, p1moves, p2moves) {
+function minimax(board, depth, isMaximizing) {
   let result = checkWinner();
+  // console.log(result);
   if (result == "X") {
-    // console.log(minimaxScores[result]);
-    return minimaxScores[result] + depth;
+    return minimaxScores[result];
   } else if (result == "O") {
-    return minimaxScores[result] - depth;
+    return minimaxScores[result];
   } else if (result == "tie") {
     return minimaxScores[result];
   }
-  let p1movesCopy = p1moves;
-  let p2movesCopy = p2moves;
-  let currentMovesCopy = board;
-
   if (isMaximizing) {
-    let bestScore = -Infinity;
-    for (let i = 0; i < 9; i++) {
-      // Is the spot available?
-      if (board[i] != "X" && board[i] != "O" && board[i] != i) {
-        let pos = board[i];
-
-        p1moves.push(pos);
-        currentMovesCopy[i] = "X";
-        let score = minimax(
-          currentMovesCopy,
-          depth + 1,
-          false,
-          p1movesCopy,
-          p2movesCopy
-        );
-        // console.log(score);
-        currentMovesCopy[i] = pos;
-        bestScore = Math.max(score, bestScore);
-        p1movesCopy = p1moves;
-        // console.log(player1Moves);
+    let bestScore = -100;
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (board[i][j] != "X" && board[i][j] != "O") {
+          board[i][j] = "O";
+          let score = minimax(board, depth + 1, false);
+          board[i][j] = "";
+          bestScore = Math.max(score, bestScore);
+        }
       }
     }
     return bestScore;
   } else {
-    let bestScore = Infinity;
-    for (let i = 0; i < 9; i++) {
-      // Is the spot available?
-      if (board[i] != "X" && board[i] != "O" && board[i] != i) {
-        let pos = board[i];
-
-        p2movesCopy.push(pos);
-        currentMovesCopy[i] = "O";
-        let score = minimax(
-          currentMovesCopy,
-          depth + 1,
-          true,
-          p1movesCopy,
-          p2movesCopy
-        );
-
-        currentMovesCopy[i] = pos;
-        bestScore = Math.min(score, bestScore);
-        p2movesCopy = p2moves;
-        // console.log(player2Moves);
+    let bestScore = 100;
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (board[i][j] != "X" && board[i][j] != "O") {
+          board[i][j] = "X";
+          let score = minimax(board, depth + 1, true);
+          board[i][j] = "";
+          bestScore = Math.min(score, bestScore);
+        }
       }
     }
     return bestScore;
   }
+}
+
+function getKeyByValue(object, value) {
+  return Object.keys(object).find(
+    key => object[key].toString() === value.toString()
+  );
 }
 
 window.addEventListener("load", drawBoard);
