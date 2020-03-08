@@ -11,29 +11,25 @@
   <body>
     <div class="content">
       <div class="game">
-        <div class="title">Tic Tac Toe</div>
+        <h1 class="title">Tic-Tac-Toe</h1>
 
         <table id="game" class="tic-tac-toe"></table>
 
         <div class="player-scores">
-          <div id="player1" class="player selected">Player 1 Score: 0</div>
-          <div id="player2" class="player">Player 2 Score: 0</div>
+          <h3 id="player1" class="player selected invisible">X's Turn</h3>
+          <h3 id="player2" class="player invisible">O's Turn</h3>
         </div>
 
-        <!-- <button id="ai-button" onClick="setPlayingAi()">
-          Press here to play vs the AI
-        </button> -->
-        <label class="switch switch-flat">
-          <input
-            id="ai-button"
-            class="switch-input"
-            type="checkbox"
-            onclick="togglePlayingAi()"
-          />
-          <span class="switch-label" data-on="AI" data-off="PvP"></span>
-          <span class="switch-handle"></span>
-        </label>
-        <div class="explainations"></div>
+        <div class="play-buttons-wrapper">
+          <div id="player-button" class="button" onClick="playPvP()">
+            Player Vs Player
+          </div>
+          <div id="ai-button" class="button" onClick="playAi()">
+            Player Vs AI
+          </div>
+        </div>
+
+        <h1 id="winner" class="invisible"></h1>
       </div>
     </div>
 

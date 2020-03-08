@@ -1,19 +1,32 @@
 .body {
   position: relative;
+  font-family: Arial, Helvetica, sans-serif;
+  min-height: 381px;
 }
 .content {
   position: relative;
   display: grid;
   justify-content: center;
 }
-
 .game {
   position: relative;
   display: grid;
   width: 900px;
   justify-content: center;
-  background-color: lightsteelblue;
-  border: solid 1px black;
+  background-image: radial-gradient(
+    circle,
+    rgb(135, 206, 250, 1) 3%,
+    rgb(135, 206, 250, 0) 97%
+  );
+  /* border: solid 1px black; */
+  text-align: center;
+  border: solid 1px grey;
+}
+h1 {
+  margin: 0px;
+}
+h3 {
+  margin: 0px;
 }
 
 .title {
@@ -25,16 +38,17 @@
 .game td {
   height: 100px;
   width: 100px;
-  border: solid 2px black;
+  /* border: solid 2px black; */
   text-align: center;
   font-size: 30px;
   font-family: "Courier New", Courier, monospace;
   background-color: wheat;
   border-radius: 10px;
+  cursor: pointer;
 }
 
 .game td:hover {
-  background-color: lightskyblue;
+  background-color: rgb(135, 206, 250);
 }
 
 .player-scores {
@@ -44,6 +58,7 @@
 
 .player {
   font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
 }
 
 .selected {
@@ -51,40 +66,20 @@
   border: 1px dotted rgb(112, 112, 112);
 }
 
-.ai-button-visible {
+.invisible {
   visibility: hidden;
 }
 
-.switch-flat {
-  padding: 0;
-  background: #fff;
-  background-image: none;
+.button {
+  background-color: wheat;
+  padding: 4px;
+  border: solid 2px black;
+  border-radius: 30px;
+  margin-top: 50px;
+  margin-bottom: 50px;
+  cursor: pointer;
+  font-family: Arial, Helvetica, sans-serif;
 }
-.switch-flat .switch-label {
-  background: #fff;
-  border: solid 2px #eceeef;
-  box-shadow: none;
-}
-.switch-flat .switch-label:after {
-  color: #0088cc;
-}
-.switch-flat .switch-handle {
-  top: 6px;
-  left: 6px;
-  background: #dadada;
-  width: 22px;
-  height: 22px;
-  box-shadow: none;
-}
-.switch-flat .switch-handle:before {
-  background: #eceeef;
-}
-.switch-flat .switch-input:checked ~ .switch-label {
-  background: #fff;
-  border-color: #0088cc;
-}
-.switch-flat .switch-input:checked ~ .switch-handle {
-  left: 72px;
-  background: #0088cc;
-  box-shadow: none;
+.button:hover {
+  background-color: lightskyblue;
 }

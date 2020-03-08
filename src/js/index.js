@@ -33,8 +33,17 @@ var currentPlayer = 0;
 
 var isPlayingAi = false;
 
-function togglePlayingAi() {
-  isPlayingAi = !isPlayingAi;
+function togglePlayingAi(state) {
+  isPlayingAi = state;
+}
+
+function playPvP() {
+  togglePlayingAi(false);
+  drawBoard();
+}
+function playAi() {
+  togglePlayingAi(true);
+  drawBoard();
 }
 
 //adds the desired position to the game board for the player which is passed.
@@ -50,10 +59,21 @@ function addToGameBoard(position, player) {
 function drawBoard() {
   const parent = document.getElementById("game");
 
+  if (isPlayingAi) {
+    document.getElementById("player2").classList.add("selected");
+    document.getElementById("player1").classList.remove("selected");
+  } else {
+    document.getElementById("player1").classList.add("selected");
+    document.getElementById("player2").classList.remove("selected");
+  }
+  document.getElementById("player1").classList.remove("invisible");
+  document.getElementById("player2").classList.remove("invisible");
+
   while (parent.hasChildNodes()) {
     parent.removeChild(parent.firstChild);
   }
-
+  document.getElementById("player-button").hidden = true;
+  document.getElementById("ai-button").hidden = true;
   var counter = 0;
   for (var i = 0; i < 3; i++) {
     var row = document.createElement("tr");
@@ -66,32 +86,50 @@ function drawBoard() {
     }
     parent.appendChild(row);
   }
-  if (isPlayingAi) makeAiMove(board);
+  if (isPlayingAi) {
+    makeAiMove(board);
+  }
 }
 
+function removeBoard() {
+  const parent = document.getElementById("game");
+
+  while (parent.hasChildNodes()) {
+    parent.removeChild(parent.firstChild);
+  }
+}
 //inserts a click handler into each slot on the grid which updates the game state if clicked
 function gameHandler(e) {
   //if player 1
   if (currentPlayer == 0) {
     //update the board with this move
-    this.innerHTML = "O";
-    addToGameBoard(this.id, "O");
-    //swap active player notation
-    document.getElementById("player1").classList.remove("selected");
-    document.getElementById("player2").classList.add("selected");
+    if (isPlayingAi) {
+      this.innerHTML = "O";
+      addToGameBoard(this.id, "O");
+      //swap active player notation
+      document.getElementById("player2").classList.remove("selected");
+      document.getElementById("player1").classList.add("selected");
+    } else {
+      this.innerHTML = "X";
+      addToGameBoard(this.id, "X");
+      //swap active player notation
+      document.getElementById("player1").classList.remove("selected");
+      document.getElementById("player2").classList.add("selected");
+    }
 
     //if playing vs ai
     if (isPlayingAi && checkWinner() == null) {
       //make it move and update the board
       currentPlayer = 1;
       makeAiMove(board);
-
       if (checkWinner() == "X" || checkWinner() == "O") {
-        reset();
-        window.setTimeout(drawBoard(), 7000);
+        alertWinner(checkWinner());
+        let timeout = window.setTimeout(reset, 2000);
+        return null;
       } else if (checkWinner() == "tie") {
-        window.setTimeout(reset(), 3000);
-        drawBoard();
+        alertWinner(checkWinner());
+        let timeout = window.setTimeout(reset, 2000);
+        return null;
       }
     }
   } else if (!isPlayingAi && currentPlayer == 1) {
@@ -102,31 +140,29 @@ function gameHandler(e) {
     document.getElementById("player1").classList.add("selected");
   }
 
-  //check if someone has won, update the score if so
-  if (checkWinner() == "X") {
+  if (checkWinner() != null) {
+    alertWinner(checkWinner());
+    window.setTimeout(reset, 2000);
+  } else {
     this.removeEventListener("click", arguments.callee);
-    player1Score++;
-    reset();
-    window.setTimeout(drawBoard(), 7000);
-  } else if (checkWinner() == "O") {
-    this.removeEventListener("click", arguments.callee);
-    player2Score++;
-    reset();
-    window.setTimeout(drawBoard(), 7000);
-  } else if (checkWinner() == "tie") {
-    this.removeEventListener("click", arguments.callee);
-    window.setTimeout(reset(), 3000);
-    drawBoard();
-  } //if not then swap the player's turns
-  else if (!isPlayingAi) {
-    this.removeEventListener("click", arguments.callee);
-
-    if (currentPlayer == 0) currentPlayer = 1;
-    else currentPlayer = 0;
-  } //or if playing the ai then just remove the click function as board placement is handled by the ai
-  else {
-    this.removeEventListener("click", arguments.callee);
+    if (!isPlayingAi) {
+      if (currentPlayer == 0) currentPlayer = 1;
+      else currentPlayer = 0;
+    }
   }
+} //or if playing the ai then just remove the click function as board placement is handled by the ai
+
+function alertWinner(player) {
+  let x = player;
+  if (player == "tie") {
+    document.getElementById("winner").innerHTML = "Tie!";
+  } else {
+    document.getElementById("winner").innerHTML = x + " wins!";
+    if (player == "X") {
+      player1Score++;
+    } else player2Score++;
+  }
+  document.getElementById("winner").classList.remove("invisible");
 }
 
 //helper function to see if spots on the board contain the same move
@@ -181,11 +217,15 @@ function reset() {
     ["", "", ""]
   ];
   document.getElementById("player2").classList.remove("selected");
-  document.getElementById("player2").innerHTML =
-    "Player 2 Score: " + player2Score;
-  document.getElementById("player1").classList.add("selected");
-  document.getElementById("player1").innerHTML =
-    "Player 1 Score: " + player1Score;
+  document.getElementById("player2").classList.add("invisible");
+
+  document.getElementById("player1").classList.remove("selected");
+  document.getElementById("player1").classList.add("invisible");
+
+  document.getElementById("winner").classList.add("invisible");
+  removeBoard();
+  document.getElementById("player-button").hidden = false;
+  document.getElementById("ai-button").hidden = false;
 }
 
 //the ai's turn
@@ -215,11 +255,12 @@ function makeAiMove(board) {
   //then using the best move, update the board
   document.getElementById(bestMove).innerHTML = "X";
   addToGameBoard(bestMove, "X");
-  document.getElementById("player2").classList.remove("selected");
-  document.getElementById("player1").classList.add("selected");
+  document.getElementById("player2").classList.add("selected");
+  document.getElementById("player1").classList.remove("selected");
   document.getElementById(bestMove).removeEventListener("click", gameHandler);
   //and give control back to the player.
   currentPlayer = 0;
+  return new Promise(function(resolve) {});
 }
 
 //scores for each minimax result
@@ -234,9 +275,9 @@ function minimax(board, depth, isMaximizing) {
   let result = checkWinner();
   //and return the appropriate scores
   if (result == "X") {
-    return minimaxScores[result];
+    return minimaxScores[result] - depth;
   } else if (result == "O") {
-    return minimaxScores[result];
+    return minimaxScores[result] + depth;
   } else if (result == "tie") {
     return minimaxScores[result];
   }
@@ -247,7 +288,7 @@ function minimax(board, depth, isMaximizing) {
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
         if (board[i][j] != "X" && board[i][j] != "O") {
-          board[i][j] = "O";
+          board[i][j] = "X";
           let score = minimax(board, depth + 1, false);
           board[i][j] = "";
           bestScore = Math.max(score, bestScore);
@@ -261,7 +302,7 @@ function minimax(board, depth, isMaximizing) {
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
         if (board[i][j] != "X" && board[i][j] != "O") {
-          board[i][j] = "X";
+          board[i][j] = "O";
           let score = minimax(board, depth + 1, true);
           board[i][j] = "";
           bestScore = Math.min(score, bestScore);
@@ -271,6 +312,3 @@ function minimax(board, depth, isMaximizing) {
     return bestScore;
   }
 }
-
-//create the game board on load
-window.addEventListener("load", drawBoard);
